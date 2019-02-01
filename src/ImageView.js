@@ -10,6 +10,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import VideoPlayer from 'react-native-video-player'
 
 import {
     type ControlType,
@@ -115,7 +116,9 @@ export default class ImageView extends Component<PropsType, StateType> {
             panelsVisible: true,
             isFlatListRerendered: false,
             screenDimensions: initialScreenDimensions,
+            loadingVideo: false
         };
+        this.players = {}
         this.glideAlwaysTimer = null;
         this.listRef = null;
         this.isScrolling = false;
@@ -709,22 +712,58 @@ export default class ImageView extends Component<PropsType, StateType> {
         }
     };
 
+    _mediaLoaded () {
+      if (this.state.loadingVideo) {
+        this.setState({ loadingVideo: false })
+      }
+    }
+
+    selectOnlyVideo (uniqueKey) {
+      Object.keys(this.players).forEach(key => {
+        if (uniqueKey !== key && this.players[key] && this.players[key].state && this.players[key].state.isStarted) {
+          this.players[key].state.isStarted = false
+        }
+      })
+    }
+
     renderImage = ({item: image, index}: {item: *, index: number}): * => {
         const loaded = image.loaded && image.width && image.height;
-
+        let uniqueKey = 'remote' + '_' + index
+        console.log(image)
         return (
             <View
                 style={styles.imageContainer}
                 onStartShouldSetResponder={(): boolean => true}
             >
-                <Animated.Image
-                    resizeMode="cover"
-                    source={image.source}
-                    style={this.getImageStyle(image, index)}
-                    onLoad={(): void => this.onImageLoaded(index)}
-                    {...this.panResponder.panHandlers}
-                />
-                {!loaded && <ActivityIndicator style={styles.loading} />}
+
+                {/image/.test(image.mimeType) ? (
+                    <Animated.Image
+                        resizeMode="cover"
+                        source={image.source}
+                        style={this.getImageStyle(image, index)}
+                        onLoad={(): void => this.onImageLoaded(index)}
+                        {...this.panResponder.panHandlers}
+                    />
+                  ) : (
+                    <View style={{ width: image.width, height: image.height }}>
+                      <VideoPlayer
+                        ref={(ref) => {
+                          this.players[uniqueKey] = ref
+                        }}
+                        ignoreSilentSwitch={'ignore'}
+                        onStart={() => { this.selectOnlyVideo(uniqueKey) }}
+                        disableFullscreen
+                        video={{ uri: image.url }}
+                        thumbnail={image.thumbnail ? { uri: image.thumbnail } : null}
+                        videoWidth={image.width}
+                        onLoadStart={() => this.setState({ loadingVideo: true })}
+                        onProgress={() => this._mediaLoaded()}
+                        {...this.panResponder.panHandlers}
+                      />
+                    </View>
+                  )}
+
+                {!loaded || this.state.loadingVideo && <ActivityIndicator style={styles.loading} />}
             </View>
         );
     };
