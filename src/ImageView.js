@@ -517,39 +517,39 @@ export default class ImageView extends Component<PropsType, StateType> {
         return imageParams ? imageParams.translate : {x: 0, y: 0};
     }
 
-    getImageStyle(
-        image: ImageType,
-        index: number
-    ): {width?: number, height?: number, transform?: any, opacity?: number} {
-        const {imageIndex, screenDimensions} = this.state;
-        const {width, height} = image;
-
-        if (!width || !height) {
-            return {opacity: 0};
-        }
-
-        // very strange caching, fix it with changing size to 1 pixel
-        const {x, y} = calculateInitialTranslate(
-            width,
-            height + 1,
-            screenDimensions
-        );
-        const translateValue = new Animated.ValueXY({x, y});
-
-        const transform =
-            index === imageIndex
-                ? this.imageTranslateValue.getTranslateTransform()
-                : translateValue.getTranslateTransform();
-
-        const scale =
-            index === imageIndex
-                ? this.imageScaleValue
-                : this.getInitialScale(index);
-        // $FlowFixMe
-        transform.push({scale});
-
-        return {width, height, transform};
-    }
+    // getImageStyle(
+    //     image: ImageType,
+    //     index: number
+    // ): {width?: number, height?: number, transform?: any, opacity?: number} {
+    //     const {imageIndex, screenDimensions} = this.state;
+    //     const {width, height} = image;
+    //
+    //     if (!width || !height) {
+    //         return {opacity: 0};
+    //     }
+    //
+    //     // very strange caching, fix it with changing size to 1 pixel
+    //     const {x, y} = calculateInitialTranslate(
+    //         width,
+    //         height + 1,
+    //         screenDimensions
+    //     );
+    //     const translateValue = new Animated.ValueXY({x, y});
+    //
+    //     const transform =
+    //         index === imageIndex
+    //             ? this.imageTranslateValue.getTranslateTransform()
+    //             : translateValue.getTranslateTransform();
+    //
+    //     const scale =
+    //         index === imageIndex
+    //             ? this.imageScaleValue
+    //             : this.getInitialScale(index);
+    //     // $FlowFixMe
+    //     transform.push({scale});
+    //
+    //     return {width, height, transform};
+    // }
 
     getControls = (): ControlsType => {
         const {close, prev, next} = this.props.controls;
@@ -740,12 +740,13 @@ export default class ImageView extends Component<PropsType, StateType> {
                     <Animated.Image
                         resizeMode="cover"
                         source={image.source}
-                        style={this.getImageStyle(image, index)}
+                        // style={this.getImageStyle(image, index)}
+                        style={{ width: image.width, height: image.height,  marginTop: image.height / 2}}
                         onLoad={(): void => this.onImageLoaded(index)}
-                        {...this.panResponder.panHandlers}
+                        // {...this.panResponder.panHandlers}
                     />
                   ) : (
-                    <View style={{ width: image.width, height: image.height }}>
+                    <View style={{ width: image.width, height: image.height, marginTop: image.height / 2}}>
                       <VideoPlayer
                         ref={(ref) => {
                           this.players[uniqueKey] = ref
@@ -758,7 +759,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                         videoWidth={image.width}
                         onLoadStart={() => this.setState({ loadingVideo: true })}
                         onProgress={() => this._mediaLoaded()}
-                        {...this.panResponder.panHandlers}
+                        // {...this.panResponder.panHandlers}
                       />
                     </View>
                   )}
