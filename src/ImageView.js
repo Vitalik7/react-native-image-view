@@ -746,7 +746,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                         // {...this.panResponder.panHandlers}
                     />
                   ) : (
-                    <View style={{ width: image.width, height: image.height, marginTop: image.height / 2}}>
+                    <View style={{ width: image.width, height: image.height}}>
                       <VideoPlayer
                         ref={(ref) => {
                           this.players[uniqueKey] = ref
