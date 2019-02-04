@@ -729,11 +729,12 @@ export default class ImageView extends Component<PropsType, StateType> {
     renderImage = ({item: image, index}: {item: *, index: number}): * => {
         const loaded = image.loaded && image.width && image.height;
         let uniqueKey = 'remote' + '_' + index
-        console.log(image)
+        const screenWidth = this.state.screenDimensions.screenWidth
+        const screenHeight = this.state.screenDimensions.screenHeight
         return (
             <View
                 style={styles.imageContainer}
-                onStartShouldSetResponder={(): boolean => true}
+                // onStartShouldSetResponder={(): boolean => true}
             >
 
                 {/image/.test(image.mimeType) ? (
@@ -741,12 +742,12 @@ export default class ImageView extends Component<PropsType, StateType> {
                         resizeMode="cover"
                         source={image.source}
                         // style={this.getImageStyle(image, index)}
-                        style={{ width: image.width, height: image.height,  marginTop: image.height / 2}}
+                        style={{ width: screenWidth, height: screenHeight / 2, marginTop: screenHeight / 4 }}
                         onLoad={(): void => this.onImageLoaded(index)}
                         // {...this.panResponder.panHandlers}
                     />
                   ) : (
-                    <View style={{ width: image.width, height: image.height}}>
+                    <View style={{ marginTop: screenHeight / 4 }}>
                       <VideoPlayer
                         ref={(ref) => {
                           this.players[uniqueKey] = ref
@@ -756,7 +757,9 @@ export default class ImageView extends Component<PropsType, StateType> {
                         disableFullscreen
                         video={{ uri: image.url }}
                         thumbnail={image.thumbnail ? { uri: image.thumbnail } : null}
-                        videoWidth={image.width}
+                        videoWidth={screenWidth}
+                        resizeMode={'cover'}
+                        videoHeight={screenHeight / 2}
                         onLoadStart={() => this.setState({ loadingVideo: true })}
                         onProgress={() => this._mediaLoaded()}
                         // {...this.panResponder.panHandlers}
