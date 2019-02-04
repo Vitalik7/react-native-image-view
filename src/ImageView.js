@@ -10,6 +10,7 @@ import {
     Platform,
     View,
 } from 'react-native';
+import VideoPlayer from 'react-native-video-player'
 
 import {
     type ControlType,
@@ -115,7 +116,9 @@ export default class ImageView extends Component<PropsType, StateType> {
             panelsVisible: true,
             isFlatListRerendered: false,
             screenDimensions: initialScreenDimensions,
+            loadingVideo: false
         };
+        this.players = {}
         this.glideAlwaysTimer = null;
         this.listRef = null;
         this.isScrolling = false;
@@ -514,39 +517,39 @@ export default class ImageView extends Component<PropsType, StateType> {
         return imageParams ? imageParams.translate : {x: 0, y: 0};
     }
 
-    getImageStyle(
-        image: ImageType,
-        index: number
-    ): {width?: number, height?: number, transform?: any, opacity?: number} {
-        const {imageIndex, screenDimensions} = this.state;
-        const {width, height} = image;
-
-        if (!width || !height) {
-            return {opacity: 0};
-        }
-
-        // very strange caching, fix it with changing size to 1 pixel
-        const {x, y} = calculateInitialTranslate(
-            width,
-            height + 1,
-            screenDimensions
-        );
-        const translateValue = new Animated.ValueXY({x, y});
-
-        const transform =
-            index === imageIndex
-                ? this.imageTranslateValue.getTranslateTransform()
-                : translateValue.getTranslateTransform();
-
-        const scale =
-            index === imageIndex
-                ? this.imageScaleValue
-                : this.getInitialScale(index);
-        // $FlowFixMe
-        transform.push({scale});
-
-        return {width, height, transform};
-    }
+    // getImageStyle(
+    //     image: ImageType,
+    //     index: number
+    // ): {width?: number, height?: number, transform?: any, opacity?: number} {
+    //     const {imageIndex, screenDimensions} = this.state;
+    //     const {width, height} = image;
+    //
+    //     if (!width || !height) {
+    //         return {opacity: 0};
+    //     }
+    //
+    //     // very strange caching, fix it with changing size to 1 pixel
+    //     const {x, y} = calculateInitialTranslate(
+    //         width,
+    //         height + 1,
+    //         screenDimensions
+    //     );
+    //     const translateValue = new Animated.ValueXY({x, y});
+    //
+    //     const transform =
+    //         index === imageIndex
+    //             ? this.imageTranslateValue.getTranslateTransform()
+    //             : translateValue.getTranslateTransform();
+    //
+    //     const scale =
+    //         index === imageIndex
+    //             ? this.imageScaleValue
+    //             : this.getInitialScale(index);
+    //     // $FlowFixMe
+    //     transform.push({scale});
+    //
+    //     return {width, height, transform};
+    // }
 
     getControls = (): ControlsType => {
         const {close, prev, next} = this.props.controls;
@@ -709,22 +712,62 @@ export default class ImageView extends Component<PropsType, StateType> {
         }
     };
 
+    _mediaLoaded () {
+      if (this.state.loadingVideo) {
+        this.setState({ loadingVideo: false })
+      }
+    }
+
+    selectOnlyVideo (uniqueKey) {
+      Object.keys(this.players).forEach(key => {
+        if (uniqueKey !== key && this.players[key] && this.players[key].state && this.players[key].state.isStarted) {
+          this.players[key].state.isStarted = false
+        }
+      })
+    }
+
     renderImage = ({item: image, index}: {item: *, index: number}): * => {
         const loaded = image.loaded && image.width && image.height;
-
+        let uniqueKey = 'remote' + '_' + index
+        const screenWidth = this.state.screenDimensions.screenWidth
+        const screenHeight = this.state.screenDimensions.screenHeight
         return (
             <View
                 style={styles.imageContainer}
-                onStartShouldSetResponder={(): boolean => true}
+                // onStartShouldSetResponder={(): boolean => true}
             >
-                <Animated.Image
-                    resizeMode="cover"
-                    source={image.source}
-                    style={this.getImageStyle(image, index)}
-                    onLoad={(): void => this.onImageLoaded(index)}
-                    {...this.panResponder.panHandlers}
-                />
-                {!loaded && <ActivityIndicator style={styles.loading} />}
+
+                {/image/.test(image.mimeType) ? (
+                    <Animated.Image
+                        resizeMode="cover"
+                        source={image.source}
+                        // style={this.getImageStyle(image, index)}
+                        style={{ width: screenWidth, height: screenHeight / 2, marginTop: screenHeight / 4 }}
+                        onLoad={(): void => this.onImageLoaded(index)}
+                        // {...this.panResponder.panHandlers}
+                    />
+                  ) : (
+                    <View style={{ marginTop: screenHeight / 4 }}>
+                      <VideoPlayer
+                        ref={(ref) => {
+                          this.players[uniqueKey] = ref
+                        }}
+                        ignoreSilentSwitch={'ignore'}
+                        onStart={() => { this.selectOnlyVideo(uniqueKey) }}
+                        disableFullscreen
+                        video={{ uri: image.url }}
+                        thumbnail={image.thumbnail ? { uri: image.thumbnail } : null}
+                        videoWidth={screenWidth}
+                        resizeMode={'cover'}
+                        videoHeight={screenHeight / 2}
+                        onLoadStart={() => this.setState({ loadingVideo: true })}
+                        onProgress={() => this._mediaLoaded()}
+                        // {...this.panResponder.panHandlers}
+                      />
+                    </View>
+                  )}
+
+                {!loaded || this.state.loadingVideo && <ActivityIndicator style={styles.loading} />}
             </View>
         );
     };

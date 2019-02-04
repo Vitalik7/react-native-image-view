@@ -1,6 +1,0 @@
-node_modules/**/*
-.expo/*
-npm-debug.*
-yarn.lock
-ImageView.js
-types.js
