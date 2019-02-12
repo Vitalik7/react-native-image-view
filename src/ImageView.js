@@ -158,7 +158,7 @@ export default class ImageView extends Component<PropsType, StateType> {
     componentDidMount() {
         styles = createStyles(this.state.screenDimensions);
         Dimensions.addEventListener('change', this.onChangeDimension);
-        if (this.props.isVisible) {
+        if (this.props.isVisible && this.props.imageIndex) {
           this.startVideo()
         }
     }
