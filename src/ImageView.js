@@ -9,6 +9,8 @@ import {
     Modal,
     Platform,
     View,
+    Text,
+    Image
 } from 'react-native';
 import VideoPlayer from 'react-native-video-player'
 
@@ -116,7 +118,8 @@ export default class ImageView extends Component<PropsType, StateType> {
             panelsVisible: true,
             isFlatListRerendered: false,
             screenDimensions: initialScreenDimensions,
-            loadingVideo: false
+            loadingVideo: false,
+            imgError: false
         };
         this.players = {}
         this.glideAlwaysTimer = null;
@@ -718,7 +721,7 @@ export default class ImageView extends Component<PropsType, StateType> {
       }
     }
 
-    selectOnlyVideo (uniqueKey = this.props.uniqueKey) {
+    selectOnlyVideo (uniqueKey) {
       Object.keys(this.players).forEach(key => {
         if (uniqueKey !== key && this.players[key] && this.players[key].state && this.players[key].state.isStarted) {
           this.players[key].state.isStarted = false
@@ -726,37 +729,45 @@ export default class ImageView extends Component<PropsType, StateType> {
       })
     }
 
-//     startVideo (uniqueKey = this.props.uniqueKey) {
-//       Object.keys(this.players).forEach(key => {
-//         if (uniqueKey === key && this.players[key] && this.players[key].state) {
-//           this.players[key].state.isStarted = true
-//           this.players[key].state.isPlaying = true
-//         }
-//       })
-//     }
-
     renderImage = ({item: image, index}: {item: *, index: number}): * => {
         const loaded = image.loaded && image.width && image.height;
-        let uniqueKey = this.props.uniqueKey
+        let uniqueKey = 'remote' + '_' + index
         const screenWidth = this.state.screenDimensions.screenWidth
         const screenHeight = this.state.screenDimensions.screenHeight
         return (
             <View
-                style={styles.imageContainer}
+                style={[styles.imageContainer, { screenWidth }]}
                 // onStartShouldSetResponder={(): boolean => true}
             >
-
-                {/image/.test(image.mimeType) ? (
+                { this.state.imgError && this.state.imageIndex
+                  ? <View style={[styles.containerNoPhoto, { width: screenWidth, height: screenHeight / 2 }]}>
+                    <View style={[styles.noPhotoContent, { width: screenWidth - 10 }]}>
+                      { this.props.kindType === 'sheep'
+                        ? <Image source={{uri: 'https://cdn1.savepice.ru/uploads/2019/2/13/bfd3351e8e10a6df5a3338b2f36e7305-full.png'}}
+                          style={{ width: 35, height: 35 }} resizeMode='contain' />
+                        : <Image source={{uri: 'https://cdn1.savepice.ru/uploads/2019/2/13/5b5c816d2ede47c1cf3f1845ad4b7da5-full.png'}}
+                          style={{ width: 35, height: 35 }} resizeMode='contain' />
+                      }
+                      <Text style={styles.noPhotoText}>No photo</Text>
+                    </View>
+                  </View>
+                  : /image/.test(image.mimeType) ? (
                     <Animated.Image
                         resizeMode="cover"
                         source={image.source}
                         // style={this.getImageStyle(image, index)}
-                        style={{ width: screenWidth, height: screenHeight / 2, marginTop: screenHeight / 4 }}
+                        style={{ width: screenWidth - 10, height: screenHeight / 2 }}
                         onLoad={(): void => this.onImageLoaded(index)}
+                        onError={({ nativeEvent: {error} }) => {
+                          this.setState({
+                            imgError: true,
+                            loading: false
+                          })
+                        }}
                         // {...this.panResponder.panHandlers}
                     />
                   ) : (
-                    <View style={{ marginTop: screenHeight / 4 }}>
+                    <View>
                       <VideoPlayer
                         ref={(ref) => {
                           this.players[uniqueKey] = ref
