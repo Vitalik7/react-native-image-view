@@ -27,6 +27,7 @@ export default function createStyles({screenWidth, screenHeight}) {
             width: screenWidth,
             height: screenHeight,
             overflow: 'hidden',
+            justifyContent: 'space-around',
         },
         loading: {
             position: 'absolute',
@@ -39,6 +40,24 @@ export default function createStyles({screenWidth, screenHeight}) {
             left: 0,
             right: 0,
             zIndex: 100,
+        },
+        containerNoPhoto: {
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          height: 224
+        },
+        noPhotoContent: {
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#3e3e3e'
+        },
+        noPhotoText: {
+          color: '#fff',
+          fontFamily: 'Lato',
+          fontSize: 25,
+          paddingLeft: 10
         },
     });
 }
