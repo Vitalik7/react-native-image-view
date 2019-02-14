@@ -774,7 +774,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                         }}
                         ignoreSilentSwitch={'ignore'}
                         onStart={() => { this.selectOnlyVideo(uniqueKey) }}
-                        disableFullscreen
+                        disableSeek
                         video={{ uri: image.url }}
                         thumbnail={image.thumbnail ? { uri: image.thumbnail } : null}
                         videoWidth={screenWidth}
