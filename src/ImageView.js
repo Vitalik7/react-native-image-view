@@ -161,6 +161,15 @@ export default class ImageView extends Component<PropsType, StateType> {
     componentDidMount() {
         styles = createStyles(this.state.screenDimensions);
         Dimensions.addEventListener('change', this.onChangeDimension);
+        if (this.state.isVisible) {
+          this.startVideo(this.props.uniqueKey)
+        }
+    }
+
+    componentDidUpdate (prevProps, prevState) {
+      if (prevState.imageIndex !== this.state.imageIndex) {
+        this.selectOnlyVideo(this.props.uniqueKey)
+      }
     }
 
     componentWillReceiveProps(nextProps: PropsType) {
@@ -725,6 +734,15 @@ export default class ImageView extends Component<PropsType, StateType> {
       Object.keys(this.players).forEach(key => {
         if (uniqueKey !== key && this.players[key] && this.players[key].state && this.players[key].state.isStarted) {
           this.players[key].state.isStarted = false
+        }
+      })
+    }
+
+    startVideo (uniqueKey) {
+      Object.keys(this.players).forEach(key => {
+        if (uniqueKey === key && this.players[key] && this.players[key].state) {
+          this.players[key].state.isStarted = true
+          this.players[key].state.isPlaying = true
         }
       })
     }
