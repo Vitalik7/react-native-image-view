@@ -774,7 +774,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                         resizeMode="cover"
                         source={image.source}
                         // style={this.getImageStyle(image, index)}
-                        style={{ width: screenWidth - 10, height: screenHeight / 2 }}
+                        style={{ width: screenWidth, height: screenHeight / 2 }}
                         onLoad={(): void => this.onImageLoaded(index)}
                         onError={({ nativeEvent: {error} }) => {
                           this.setState({
@@ -891,7 +891,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                     React.createElement(next, {onPress: this.scrollToNext})}
                 {renderFooter && (
                     <Animated.View
-                        style={[styles.footer, {transform: footerTranslate}]}
+                        style={[styles.footer, {transform: footerTranslate}, { marginBottom: this.state.screenDimensions.screenHeight / 5 }]}
                         onLayout={event => {
                             this.footerHeight = event.nativeEvent.layout.height;
                         }}
