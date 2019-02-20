@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: 30,
-        marginRight: 20,
+        marginRight: 10,
     },
     closeButton__text: {
         backgroundColor: 'transparent',
