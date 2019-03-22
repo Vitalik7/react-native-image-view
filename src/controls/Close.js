@@ -1,8 +1,9 @@
 // @flow
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, Dimensions} from 'react-native';
 
 const HIT_SLOP = {top: 15, left: 15, right: 15, bottom: 15};
+const SCREEN_HEIGHT = Dimensions.get('window').height
 
 const styles = StyleSheet.create({
     closeButton: {
@@ -13,8 +14,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.2)',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 10,
-        marginRight: 10,
+        marginTop: (SCREEN_HEIGHT / 4) - 40,
+        // marginRight: 10,
     },
     closeButton__text: {
         backgroundColor: 'transparent',
