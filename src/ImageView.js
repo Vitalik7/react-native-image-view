@@ -119,7 +119,8 @@ export default class ImageView extends Component<PropsType, StateType> {
             isFlatListRerendered: false,
             screenDimensions: initialScreenDimensions,
             loadingVideo: false,
-            imgError: false
+            imgError: false,
+            loadingImg: false
         };
         this.players = {}
         this.glideAlwaysTimer = null;
@@ -754,41 +755,44 @@ export default class ImageView extends Component<PropsType, StateType> {
         const screenHeight = this.state.screenDimensions.screenHeight
         return (
             <View
-                style={[styles.imageContainer, { screenWidth }]}
+                style={styles.imageContainer}
                 // onStartShouldSetResponder={(): boolean => true}
             >
+                
                 { this.state.imgError && this.state.imageIndex
-                  ? <View style={[styles.containerNoPhoto, { width: screenWidth, height: screenHeight / 2 }]}>
+                ? <View style={[styles.containerNoPhoto, { width: screenWidth, height: screenHeight / 2 }]}>
                     <View style={[styles.noPhotoContent, { width: screenWidth - 10 }]}>
-                      { this.props.kindType === 'sheep'
-                        ? <Image source={{uri: 'https://cdn1.savepice.ru/uploads/2019/2/13/bfd3351e8e10a6df5a3338b2f36e7305-full.png'}}
-                          style={{ width: 35, height: 35 }} resizeMode='contain' />
-                        : <Image source={{uri: 'https://cdn1.savepice.ru/uploads/2019/2/13/5b5c816d2ede47c1cf3f1845ad4b7da5-full.png'}}
-                          style={{ width: 35, height: 35 }} resizeMode='contain' />
-                      }
-                      <Text style={styles.noPhotoText}>No photo</Text>
+                    { this.props.kindType === 'sheep'
+                        ? <Image source={{uri: 'https://cdn1.imggmi.com/uploads/2019/3/11/4e564a8f56daa93ee3d4dd2bcf0f56a5-full.png'}}
+                        style={{ width: 35, height: 35 }} resizeMode='contain' />
+                        : <Image source={{uri: 'https://cdn1.imggmi.com/uploads/2019/3/11/e51aeb56b2ab25f44f9b27f814f381dd-full.png'}}
+                        style={{ width: 35, height: 35 }} resizeMode='contain' />
+                    }
+                    <Text style={styles.noPhotoText}>No photo</Text>
                     </View>
-                  </View>
-                  : /image/.test(image.mimeType) ? (
+                </View>
+                : /image/.test(image.mimeType) ? (
                     <Animated.Image
                         resizeMode="cover"
                         source={image.source}
                         // style={this.getImageStyle(image, index)}
                         style={{ width: screenWidth, height: screenHeight / 2 }}
+                        onLoadStart={(e) => this.setState({ loadingImg: true} )}
+                        onLoadEnd={(e) => this.setState({ loadingImg: false} )}
                         onLoad={(): void => this.onImageLoaded(index)}
                         onError={({ nativeEvent: {error} }) => {
-                          this.setState({
+                        this.setState({
                             imgError: true,
                             loading: false
-                          })
+                        })
                         }}
                         // {...this.panResponder.panHandlers}
                     />
-                  ) : (
+                ) : (
                     <View>
-                      <VideoPlayer
+                    <VideoPlayer
                         ref={(ref) => {
-                          this.players[uniqueKey] = ref
+                        this.players[uniqueKey] = ref
                         }}
                         ignoreSilentSwitch={'ignore'}
                         onStart={() => { this.selectOnlyVideo(uniqueKey) }}
@@ -802,11 +806,11 @@ export default class ImageView extends Component<PropsType, StateType> {
                         onLoadStart={() => this.setState({ loadingVideo: true })}
                         onProgress={() => this._mediaLoaded()}
                         // {...this.panResponder.panHandlers}
-                      />
+                    />
                     </View>
-                  )}
+                )}
 
-                {!loaded || this.state.loadingVideo && <ActivityIndicator style={styles.loading} />}
+                {this.state.loadingImg && <ActivityIndicator size='large' style={styles.loading} />}
             </View>
         );
     };
