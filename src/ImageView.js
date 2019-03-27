@@ -798,7 +798,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                         onStart={() => { this.selectOnlyVideo(uniqueKey) }}
                         disableFullscreen
                         disableSeek
-                        video={{ uri: image.url }}
+                        video={{ uri: image.url || image.uri }}
                         thumbnail={image.thumbnail ? { uri: image.thumbnail } : null}
                         videoWidth={screenWidth}
                         resizeMode={'cover'}
