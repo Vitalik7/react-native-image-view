@@ -753,6 +753,10 @@ export default class ImageView extends Component<PropsType, StateType> {
         let uniqueKey = 'remote' + '_' + index
         const screenWidth = this.state.screenDimensions.screenWidth
         const screenHeight = this.state.screenDimensions.screenHeight
+        let imageUrl = { uri: image.uri }
+        if (image.source && typeof image.source === 'object' && image.source.hasOwnProperty('uri') && image.source.uri !== undefined && image.source.uri !== 'undefined') {
+            imageUrl = image.source
+        }
         return (
             <View
                 style={styles.imageContainer}
@@ -774,7 +778,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                 : /image/.test(image.mimeType) ? (
                     <Animated.Image
                         resizeMode="cover"
-                        source={image.source}
+                        source={imageUrl}
                         // style={this.getImageStyle(image, index)}
                         style={{ width: screenWidth, height: screenHeight / 2 }}
                         onLoadStart={(e) => this.setState({ loadingImg: true} )}
