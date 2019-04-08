@@ -9,6 +9,8 @@ import {
     Modal,
     Platform,
     View,
+    Text,
+    Image
 } from 'react-native';
 import VideoPlayer from 'react-native-video-player'
 
@@ -116,7 +118,9 @@ export default class ImageView extends Component<PropsType, StateType> {
             panelsVisible: true,
             isFlatListRerendered: false,
             screenDimensions: initialScreenDimensions,
-            loadingVideo: false
+            loadingVideo: false,
+            imgError: false,
+            loadingImg: false
         };
         this.players = {}
         this.glideAlwaysTimer = null;
@@ -158,6 +162,15 @@ export default class ImageView extends Component<PropsType, StateType> {
     componentDidMount() {
         styles = createStyles(this.state.screenDimensions);
         Dimensions.addEventListener('change', this.onChangeDimension);
+        if (this.state.isVisible) {
+          this.startVideo(this.props.uniqueKey)
+        }
+    }
+
+    componentDidUpdate (prevProps, prevState) {
+      if (prevState.imageIndex !== this.state.imageIndex) {
+        this.selectOnlyVideo(this.props.uniqueKey)
+      }
     }
 
     componentWillReceiveProps(nextProps: PropsType) {
@@ -726,36 +739,70 @@ export default class ImageView extends Component<PropsType, StateType> {
       })
     }
 
+    startVideo (uniqueKey) {
+      Object.keys(this.players).forEach(key => {
+        if (uniqueKey === key && this.players[key] && this.players[key].state) {
+          this.players[key].state.isStarted = true
+          this.players[key].state.isPlaying = true
+        }
+      })
+    }
+
     renderImage = ({item: image, index}: {item: *, index: number}): * => {
         const loaded = image.loaded && image.width && image.height;
         let uniqueKey = 'remote' + '_' + index
         const screenWidth = this.state.screenDimensions.screenWidth
         const screenHeight = this.state.screenDimensions.screenHeight
+        let imageUrl = { uri: image.uri }
+        if (image.source && typeof image.source === 'object' && image.source.hasOwnProperty('uri') && image.source.uri !== undefined && image.source.uri !== 'undefined') {
+            imageUrl = image.source
+        }
         return (
             <View
                 style={styles.imageContainer}
                 // onStartShouldSetResponder={(): boolean => true}
             >
-
-                {/image/.test(image.mimeType) ? (
+                
+                { this.state.imgError && this.state.imageIndex
+                ? <View style={[styles.containerNoPhoto, { width: screenWidth, height: screenHeight / 2 }]}>
+                    <View style={[styles.noPhotoContent, { width: screenWidth - 10 }]}>
+                    { this.props.kindType === 'sheep'
+                        ? <Image source={{uri: 'https://cdn1.imggmi.com/uploads/2019/3/11/4e564a8f56daa93ee3d4dd2bcf0f56a5-full.png'}}
+                        style={{ width: 35, height: 35 }} resizeMode='contain' />
+                        : <Image source={{uri: 'https://cdn1.imggmi.com/uploads/2019/3/11/e51aeb56b2ab25f44f9b27f814f381dd-full.png'}}
+                        style={{ width: 35, height: 35 }} resizeMode='contain' />
+                    }
+                    <Text style={styles.noPhotoText}>No photo</Text>
+                    </View>
+                </View>
+                : /image/.test(image.mimeType) ? (
                     <Animated.Image
                         resizeMode="cover"
-                        source={image.source}
+                        source={imageUrl}
                         // style={this.getImageStyle(image, index)}
-                        style={{ width: screenWidth, height: screenHeight / 2, marginTop: screenHeight / 4 }}
+                        style={{ width: screenWidth, height: screenHeight / 2 }}
+                        onLoadStart={(e) => this.setState({ loadingImg: true} )}
+                        onLoadEnd={(e) => this.setState({ loadingImg: false} )}
                         onLoad={(): void => this.onImageLoaded(index)}
+                        onError={({ nativeEvent: {error} }) => {
+                        this.setState({
+                            imgError: true,
+                            loading: false
+                        })
+                        }}
                         // {...this.panResponder.panHandlers}
                     />
-                  ) : (
-                    <View style={{ marginTop: screenHeight / 4 }}>
-                      <VideoPlayer
+                ) : (
+                    <View>
+                    <VideoPlayer
                         ref={(ref) => {
-                          this.players[uniqueKey] = ref
+                        this.players[uniqueKey] = ref
                         }}
                         ignoreSilentSwitch={'ignore'}
                         onStart={() => { this.selectOnlyVideo(uniqueKey) }}
                         disableFullscreen
-                        video={{ uri: image.url }}
+                        disableSeek
+                        video={{ uri: image.url || image.uri }}
                         thumbnail={image.thumbnail ? { uri: image.thumbnail } : null}
                         videoWidth={screenWidth}
                         resizeMode={'cover'}
@@ -763,11 +810,11 @@ export default class ImageView extends Component<PropsType, StateType> {
                         onLoadStart={() => this.setState({ loadingVideo: true })}
                         onProgress={() => this._mediaLoaded()}
                         // {...this.panResponder.panHandlers}
-                      />
+                    />
                     </View>
-                  )}
+                )}
 
-                {!loaded || this.state.loadingVideo && <ActivityIndicator style={styles.loading} />}
+                {this.state.loadingImg && <ActivityIndicator size='large' style={styles.loading} />}
             </View>
         );
     };
@@ -852,7 +899,7 @@ export default class ImageView extends Component<PropsType, StateType> {
                     React.createElement(next, {onPress: this.scrollToNext})}
                 {renderFooter && (
                     <Animated.View
-                        style={[styles.footer, {transform: footerTranslate}]}
+                        style={[styles.footer, {transform: footerTranslate}, { marginBottom: this.state.screenDimensions.screenHeight / 5 }]}
                         onLayout={event => {
                             this.footerHeight = event.nativeEvent.layout.height;
                         }}
