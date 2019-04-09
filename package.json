@@ -50,5 +50,8 @@
   "bugs": {
     "url": "https://github.com/antonKalinin/react-native-image-view/issues"
   },
-  "homepage": "https://github.com/antonKalinin/react-native-image-view#readme"
+  "homepage": "https://github.com/antonKalinin/react-native-image-view#readme",
+  "dependencies": {
+    "react-native-image-pan-zoom": "^2.1.11"
+  }
 }

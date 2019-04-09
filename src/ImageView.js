@@ -10,9 +10,11 @@ import {
     Platform,
     View,
     Text,
-    Image
+    Image,
+    TouchableOpacity
 } from 'react-native';
 import VideoPlayer from 'react-native-video-player'
+import ImageZoom from 'react-native-image-pan-zoom'
 
 import {
     type ControlType,
@@ -120,7 +122,10 @@ export default class ImageView extends Component<PropsType, StateType> {
             screenDimensions: initialScreenDimensions,
             loadingVideo: false,
             imgError: false,
-            loadingImg: false
+            loadingImg: false,
+            zoomScaleImage: 1,
+            scroll: true,
+            resetScale: false
         };
         this.players = {}
         this.glideAlwaysTimer = null;
@@ -548,7 +553,7 @@ export default class ImageView extends Component<PropsType, StateType> {
     //         screenDimensions
     //     );
     //     const translateValue = new Animated.ValueXY({x, y});
-    //
+    // 
     //     const transform =
     //         index === imageIndex
     //             ? this.imageTranslateValue.getTranslateTransform()
@@ -725,6 +730,12 @@ export default class ImageView extends Component<PropsType, StateType> {
         }
     };
 
+    resetScale = () => {
+        this.setState({
+            resetScale: true
+        })
+    }
+
     _mediaLoaded () {
       if (this.state.loadingVideo) {
         this.setState({ loadingVideo: false })
@@ -776,22 +787,53 @@ export default class ImageView extends Component<PropsType, StateType> {
                     </View>
                 </View>
                 : /image/.test(image.mimeType) ? (
-                    <Animated.Image
-                        resizeMode="cover"
-                        source={imageUrl}
-                        // style={this.getImageStyle(image, index)}
-                        style={{ width: screenWidth, height: screenHeight / 2 }}
-                        onLoadStart={(e) => this.setState({ loadingImg: true} )}
-                        onLoadEnd={(e) => this.setState({ loadingImg: false} )}
-                        onLoad={(): void => this.onImageLoaded(index)}
-                        onError={({ nativeEvent: {error} }) => {
-                        this.setState({
-                            imgError: true,
-                            loading: false
-                        })
+                    <ImageZoom 
+                        cropWidth={screenWidth}
+                        cropHeight={screenHeight}
+                        imageWidth={screenWidth}
+                        imageHeight={screenHeight / 2}
+                        enableSwipeDown={true}
+                        maxScale={4}
+                        minScale={1}
+                        centerOn={this.state.resetScale ? {x: 0, y: 0, scale: 1} : null}
+                        enableSwipeDown={true}
+                        onMove={( pos ) => {
+                            if (pos.scale > 1) {
+                                this.setState({
+                                    scroll: false,
+                                    resetScale: false
+                                })
+                            } else {
+                                this.setState({
+                                    scroll: true
+                                })
+                            }
+
+                            this.setState({
+                                zoomScaleImage: pos.scale
+                            })
+
                         }}
-                        // {...this.panResponder.panHandlers}
-                    />
+                        onSwipeDown={() => this.close()}
+                        resetScale={this.state.centerFocus}>
+                            <Animated.Image
+                                resizeMode="contain"
+                                source={imageUrl}
+                                // style={[this.getImageStyle(image, index)]}
+                                style={{ width: '100%', height: screenHeight / 2 }}
+                                // style={{ width: screenWidth, height: screenHeight / 2, marginTop: screenHeight / 4 }}
+                                onLoadStart={(e) => this.setState({ loadingImg: true} )}
+                                onLoadEnd={(e) => this.setState({ loadingImg: false} )}
+                                onLoad={(): void => this.onImageLoaded(index)}
+                                onError={({ nativeEvent: {error} }) => {
+                                this.setState({
+                                    imgError: true,
+                                    loading: false
+                                })
+                                }}
+                                // {...this.panResponder.panHandlers}
+                            />
+                    </ImageZoom>
                 ) : (
                     <View>
                     <VideoPlayer
@@ -876,10 +918,11 @@ export default class ImageView extends Component<PropsType, StateType> {
                         React.createElement(close, {onPress: this.close})}
                 </Animated.View>
                 <FlatList
+                    scrollEnabled={this.state.scroll}
                     horizontal
                     pagingEnabled
                     data={images}
-                    scrollEnabled={scrollEnabled}
+                    // scrollEnabled={scrollEnabled}
                     scrollEventThrottle={16}
                     style={styles.container}
                     ref={this.onFlatListRender}
@@ -897,9 +940,17 @@ export default class ImageView extends Component<PropsType, StateType> {
                 {next &&
                     isNextVisible &&
                     React.createElement(next, {onPress: this.scrollToNext})}
+                
+                {!this.state.scroll 
+                    ? <TouchableOpacity style={{ margin: 20, zIndex: 10000, position: 'absolute' }} 
+                    onPress={this.resetScale}><Image source={require('./scale.png')}
+                    style={{ width: 30, height: 30 }} resizeMode='contain' /></TouchableOpacity>
+                    : null
+                }
+
                 {renderFooter && (
                     <Animated.View
-                        style={[styles.footer, {transform: footerTranslate}, { marginBottom: this.state.screenDimensions.screenHeight / 5 }]}
+                        style={[styles.footer, {transform: footerTranslate}, { marginBottom: this.state.zoomScaleImage > 1 ? 1 : this.state.screenDimensions.screenHeight / 5 }]}
                         onLayout={event => {
                             this.footerHeight = event.nativeEvent.layout.height;
                         }}
