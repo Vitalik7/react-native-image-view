@@ -127,6 +127,7 @@ export default class ImageView extends Component<PropsType, StateType> {
             scroll: true,
             resetScale: false
         };
+        this.flatListRef = React.createRef()
         this.players = {}
         this.glideAlwaysTimer = null;
         this.listRef = null;
@@ -264,27 +265,28 @@ export default class ImageView extends Component<PropsType, StateType> {
     }
 
     // $FlowFixMe
-    onFlatListRender = flatListRef => {
-        const {images, imageIndex, isFlatListRerendered} = this.state;
+    // onFlatListRender = flatListRef => {
+    //     console.log('flatListRef', flatListRef)
+    //     const {images, imageIndex, isFlatListRerendered} = this.state;
 
-        if (flatListRef && !isFlatListRerendered) {
-            this.listRef = flatListRef;
-            this.setState({
-                isFlatListRerendered: true,
-            });
+    //     if (flatListRef && !isFlatListRerendered) {
+    //         this.listRef = flatListRef;
+    //         this.setState({
+    //             isFlatListRerendered: true,
+    //         });
 
-            // Fix for android https://github.com/facebook/react-native/issues/13202
-            if (images.length > 0) {
-                const nextTick = new Promise(resolve => setTimeout(resolve, 0));
-                nextTick.then(() => {
-                    flatListRef.scrollToIndex({
-                        index: imageIndex,
-                        animated: false,
-                    });
-                });
-            }
-        }
-    };
+    //         // Fix for android https://github.com/facebook/react-native/issues/13202
+    //         if (images.length > 0) {
+    //             const nextTick = new Promise(resolve => setTimeout(resolve, 0));
+    //             nextTick.then(() => {
+    //                 flatListRef.scrollToIndex({
+    //                     index: imageIndex,
+    //                     animated: false,
+    //                 });
+    //             });
+    //         }
+    //     }
+    // };
 
     onNextImage = (event: EventType) => {
         const {imageIndex} = this.state;
@@ -735,7 +737,7 @@ export default class ImageView extends Component<PropsType, StateType> {
             resetScale: true
         })
     }
-
+    
     _mediaLoaded () {
       if (this.state.loadingVideo) {
         this.setState({ loadingVideo: false })
@@ -807,8 +809,12 @@ export default class ImageView extends Component<PropsType, StateType> {
                                 this.setState({
                                     scroll: true
                                 })
-                            }
+                            } 
 
+                            // temporary solution
+                            if (pos.type === 'onPanResponderRelease' && pos.type !== 'centerOn' && (pos.positionX !== 0 || pos.positionY !== 0)) {
+                                this.flatListRef.scrollToIndex({ animated: true, index: index });
+                            }
                             this.setState({
                                 zoomScaleImage: pos.scale
                             })
@@ -925,7 +931,8 @@ export default class ImageView extends Component<PropsType, StateType> {
                     // scrollEnabled={scrollEnabled}
                     scrollEventThrottle={16}
                     style={styles.container}
-                    ref={this.onFlatListRender}
+                    // ref={this.onFlatListRender}
+                    ref={(ref) => { this.flatListRef = ref; }}
                     renderSeparator={() => null}
                     keyExtractor={this.listKeyExtractor}
                     onScroll={this.onNextImage}
