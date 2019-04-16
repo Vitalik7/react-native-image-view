@@ -168,7 +168,9 @@ export default class ImageView extends Component<PropsType, StateType> {
     componentDidMount() {
         styles = createStyles(this.state.screenDimensions);
         Dimensions.addEventListener('change', this.onChangeDimension);
-        if (this.state.isVisible) {
+        this.flatListRef.scrollToIndex({ animated: true, index: this.state.imageIndex });
+        let uniqueKeyIndex = 'remote' + '_' + this.state.imageIndex
+        if (this.state.isVisible && this.props.uniqueKey === uniqueKeyIndex) {
           this.startVideo(this.props.uniqueKey)
         }
     }
@@ -745,6 +747,7 @@ export default class ImageView extends Component<PropsType, StateType> {
     }
 
     selectOnlyVideo (uniqueKey) {
+        console.log('selectOnlyVideo', uniqueKey)
       Object.keys(this.players).forEach(key => {
         if (uniqueKey !== key && this.players[key] && this.players[key].state && this.players[key].state.isStarted) {
           this.players[key].state.isStarted = false
@@ -753,10 +756,14 @@ export default class ImageView extends Component<PropsType, StateType> {
     }
 
     startVideo (uniqueKey) {
+        console.log('uniqueKey', uniqueKey)
       Object.keys(this.players).forEach(key => {
         if (uniqueKey === key && this.players[key] && this.players[key].state) {
           this.players[key].state.isStarted = true
           this.players[key].state.isPlaying = true
+        //   this.setState({
+        //     isVisible: false
+        //   })
         }
       })
     }
@@ -832,10 +839,10 @@ export default class ImageView extends Component<PropsType, StateType> {
                                 onLoadEnd={(e) => this.setState({ loadingImg: false} )}
                                 onLoad={(): void => this.onImageLoaded(index)}
                                 onError={({ nativeEvent: {error} }) => {
-                                this.setState({
-                                    imgError: true,
-                                    loading: false
-                                })
+                                    this.setState({
+                                        imgError: true,
+                                        loading: false
+                                    })
                                 }}
                                 // {...this.panResponder.panHandlers}
                             />
