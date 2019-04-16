@@ -747,7 +747,6 @@ export default class ImageView extends Component<PropsType, StateType> {
     }
 
     selectOnlyVideo (uniqueKey) {
-        console.log('selectOnlyVideo', uniqueKey)
       Object.keys(this.players).forEach(key => {
         if (uniqueKey !== key && this.players[key] && this.players[key].state && this.players[key].state.isStarted) {
           this.players[key].state.isStarted = false
@@ -756,14 +755,10 @@ export default class ImageView extends Component<PropsType, StateType> {
     }
 
     startVideo (uniqueKey) {
-        console.log('uniqueKey', uniqueKey)
       Object.keys(this.players).forEach(key => {
         if (uniqueKey === key && this.players[key] && this.players[key].state) {
           this.players[key].state.isStarted = true
           this.players[key].state.isPlaying = true
-        //   this.setState({
-        //     isVisible: false
-        //   })
         }
       })
     }
