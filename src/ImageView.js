@@ -170,7 +170,7 @@ export default class ImageView extends Component<PropsType, StateType> {
         Dimensions.addEventListener('change', this.onChangeDimension);
         this.flatListRef.scrollToIndex({ animated: true, index: this.state.imageIndex });
         let uniqueKeyIndex = 'remote' + '_' + this.state.imageIndex
-        if (this.state.isVisible && this.props.uniqueKey === uniqueKeyIndex) {
+        if (this.state.isVisible && this.props.uniqueKey === uniqueKeyIndex && this.state.images && this.state.images[this.state.imageIndex] && this.state.images[this.state.imageIndex].mimeType && !/image/.test(this.state.images[this.state.imageIndex].mimeType)) {
           this.startVideo(this.props.uniqueKey)
         }
     }
