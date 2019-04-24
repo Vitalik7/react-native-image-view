@@ -168,7 +168,9 @@ export default class ImageView extends Component<PropsType, StateType> {
     componentDidMount() {
         styles = createStyles(this.state.screenDimensions);
         Dimensions.addEventListener('change', this.onChangeDimension);
-        if (this.state.isVisible) {
+        this.flatListRef.scrollToIndex({ animated: true, index: this.state.imageIndex });
+        let uniqueKeyIndex = 'remote' + '_' + this.state.imageIndex
+        if (this.state.isVisible && this.props.uniqueKey === uniqueKeyIndex && this.state.images && this.state.images[this.state.imageIndex] && this.state.images[this.state.imageIndex].mimeType && !/image/.test(this.state.images[this.state.imageIndex].mimeType)) {
           this.startVideo(this.props.uniqueKey)
         }
     }
@@ -757,6 +759,7 @@ export default class ImageView extends Component<PropsType, StateType> {
         if (uniqueKey === key && this.players[key] && this.players[key].state) {
           this.players[key].state.isStarted = true
           this.players[key].state.isPlaying = true
+          this.setState({ loadingVideo: true })
         }
       })
     }
@@ -832,10 +835,10 @@ export default class ImageView extends Component<PropsType, StateType> {
                                 onLoadEnd={(e) => this.setState({ loadingImg: false} )}
                                 onLoad={(): void => this.onImageLoaded(index)}
                                 onError={({ nativeEvent: {error} }) => {
-                                this.setState({
-                                    imgError: true,
-                                    loading: false
-                                })
+                                    this.setState({
+                                        imgError: true,
+                                        loadingImg: false
+                                    })
                                 }}
                                 // {...this.panResponder.panHandlers}
                             />
@@ -846,8 +849,9 @@ export default class ImageView extends Component<PropsType, StateType> {
                         ref={(ref) => {
                         this.players[uniqueKey] = ref
                         }}
+                        style={{ width: screenWidth }}
                         ignoreSilentSwitch={'ignore'}
-                        onStart={() => { this.selectOnlyVideo(uniqueKey) }}
+                        // onStart={() => { this.selectOnlyVideo(uniqueKey) }}
                         disableFullscreen
                         disableSeek
                         video={{ uri: image.url || image.uri }}
@@ -856,13 +860,18 @@ export default class ImageView extends Component<PropsType, StateType> {
                         resizeMode={'cover'}
                         videoHeight={screenHeight / 2}
                         onLoadStart={() => this.setState({ loadingVideo: true })}
-                        onProgress={() => this._mediaLoaded()}
+                        onLoad={() => this._mediaLoaded()}  
+                        // onProgress={() => this._mediaLoaded()}
                         // {...this.panResponder.panHandlers}
                     />
                     </View>
                 )}
 
-                {this.state.loadingImg && <ActivityIndicator size='large' style={styles.loading} />}
+                {/image/.test(image.mimeType) ?
+                    this.state.loadingImg && <ActivityIndicator size='large' style={styles.loading} />
+                    : this.state.loadingVideo && <ActivityIndicator size='large' style={styles.loading} />
+                }
+                {/* {(this.state.loadingImg || this.state.loadingVideo) && <ActivityIndicator size='large' style={styles.loading} />} */}
             </View>
         );
     };
