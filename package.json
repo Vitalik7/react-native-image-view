@@ -53,7 +53,6 @@
   "homepage": "https://github.com/antonKalinin/react-native-image-view#readme",
   "dependencies": {
     "react-native-image-pan-zoom": "^2.1.11",
-    "react-native-image-progress": "^1.1.1",
-    "react-native-progress": "^3.6.0"
+    "react-native-percentage-circle": "^1.0.7"
   }
 }
