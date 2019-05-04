@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import VideoPlayer from 'react-native-video-player'
 import ImageZoom from 'react-native-image-pan-zoom'
+import * as Progress from 'react-native-progress'
 
 import {
     type ControlType,
@@ -868,8 +869,10 @@ export default class ImageView extends Component<PropsType, StateType> {
                 )}
 
                 {/image/.test(image.mimeType) ?
-                    this.state.loadingImg && <ActivityIndicator size='large' style={styles.loading} />
-                    : this.state.loadingVideo && <ActivityIndicator size='large' style={styles.loading} />
+                    this.state.loadingImg && <Progress.Pie progress={0.4} size={50} />
+                    // <ActivityIndicator size='large' style={styles.loading} />
+                    : this.state.loadingVideo && <Progress.Pie progress={0.4} size={50} />
+                    // <ActivityIndicator size='large' style={styles.loading} />
                 }
                 {/* {(this.state.loadingImg || this.state.loadingVideo) && <ActivityIndicator size='large' style={styles.loading} />} */}
             </View>
